@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="pl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMINA - Ekskluzywne Projektowanie Wnętrz</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        black: {
+                            DEFAULT: '#030303',
+                            light: '#0a0a0a',
+                            lighter: '#141414',
+                        },
+                        gold: {
+                            light: '#F3E5AB',
+                            DEFAULT: '#D4AF37',
+                            dark: '#AA8C2C',
+                            gradient1: '#BF953F',
+                            gradient2: '#FCF6BA'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        handwriting: ['Great Vibes', 'cursive'],
+                    },
+                    transitionTimingFunction: {
+                        'expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030303;
+            color: #ffffff;
+            overflow-x: hidden;
+            /* Hide native cursor for fine pointer devices to use custom cursor */
+            @media (pointer: fine) { cursor: none; }
+        }
+
+        /* Niestandardowy Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030303; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Złoty Gradient Text */
+        .text-gradient-gold {
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-size: 200% auto;
+            animation: shine 5s linear infinite;
+        }
+        @keyframes shine { to { background-position: 200% center; } }
+
+        /* Custom Cursor */
+        #cursor-dot {
+            width: 8px; height: 8px; background-color: #D4AF37;
+            position: fixed; top: 0; left: 0; border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+        }
+        #cursor-ring {
+            width: 40px; height: 40px; border: 1px solid rgba(212, 175, 55, 0.5);
+            position: fixed; top: 0; left: 0; border-radius: 50%;
+            pointer-events: none; z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease-out, width 0.3s, height 0.3s, border-color 0.3s, background-color 0.3s;
+        }
+        /* States for custom cursor */
+        body.hovering-link #cursor-dot { transform: translate(-50%, -50%) scale(0); }
+        body.hovering-link #cursor-ring { width: 60px; height: 60px; background-color: rgba(212, 175, 55, 0.1); border-color: #D4AF37; backdrop-filter: blur(2px); }
+        body.drag-mode #cursor-ring { width: 80px; height: 80px; background-color: rgba(212, 175, 55, 0.9); border-color: transparent; mix-blend-mode: difference; }
+        body.drag-mode #cursor-ring::after { content: 'DRAG'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #000; font-size: 10px; font-weight: bold; letter-spacing: 2px; }
+        body.drag-mode #cursor-dot { display: none; }
+        @media (max-width: 1024px) { #cursor-dot, #cursor-ring { display: none !important; } body { cursor: auto; } }
+
+        /* Preloader */
+        .loader-mask {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #030303; z-index: 10000; display: flex;
+            justify-content: center; items-center; transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .loader-mask.hidden-up { transform: translateY(-100%); }
+        .loader-line { width: 0; height: 1px; background: #D4AF37; transition: width 1.5s ease; position: absolute; top: 50%; left: 0; }
+
+        /* Hero Slider Ken Burns */
+        .slide { opacity: 0; transition: opacity 1.5s ease-in-out; }
+        .slide.active { opacity: 1; }
+        .slide .bg-image { transform: scale(1.1); transition: transform 8s linear; }
+        .slide.active .bg-image { transform: scale(1); }
+
+        /* Reveal Animations (On Scroll) */
+        .reveal-up { opacity: 0; transform: translateY(50px); transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-up.in-view { opacity: 1; transform: translateY(0); }
+        .reveal-scale { opacity: 0; transform: scale(0.9); transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal-scale.in-view { opacity: 1; transform: scale(1); }
+        
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        /* Button Hover */
+        .btn-gold { position: relative; overflow: hidden; z-index: 1; }
+        .btn-gold::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%;
+            background: #ffffff; z-index: -1; transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-gold:hover::before { width: 100%; }
+
+        /* Floating Labels in Form */
+        .input-group { position: relative; margin-bottom: 2rem; }
+        .input-group input, .input-group textarea {
+            width: 100%; padding: 10px 0; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2); color: white; font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .input-group label {
+            position: absolute; top: 10px; left: 0; color: rgba(255,255,255,0.5);
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
+            pointer-events: none; transition: 0.3s ease all;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none; border-bottom-color: #D4AF37; box-shadow: 0 1px 0 0 #D4AF37;
+        }
+        .input-group input:focus ~ label, .input-group input:valid ~ label,
+        .input-group textarea:focus ~ label, .input-group textarea:valid ~ label {
+            top: -15px; font-size: 0.65rem; color: #D4AF37;
+        }
+
+        /* Portfolio drag grab cursor override */
+        #portfolio-container { cursor: grab; }
+        #portfolio-container:active { cursor: grabbing; }
+
+        /* Line clamping for modal desc */
+        .line-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="antialiased selection:bg-gold selection:text-black">
+
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- Preloader -->
+    <div id="preloader" class="loader-mask">
+        <div class="relative w-full h-full flex flex-col justify-center items-center">
+            <h1 class="font-handwriting text-5xl md:text-6xl text-white opacity-0 animate-[fadeIn_1s_ease-out_0.5s_forwards]">
+                Gold Project<span class="text-gold ml-1">.</span>
+            </h1>
+            <div class="loader-line" id="loader-line"></div>
+        </div>
+    </div>
+
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-500 py-6 px-6 md:px-12 border-b border-transparent backdrop-blur-md bg-black/40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="#" class="font-handwriting text-4xl text-white group cursor-hover tracking-wide">
+                Gold Project<span class="text-gold group-hover:animate-pulse ml-1">.</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-10 items-center text-xs tracking-[0.2em] uppercase font-light">
+                <a href="#o-nas" class="relative group cursor-hover text-white/80 hover:text-white transition-colors py-2">
+                    O nas
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-gold transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#uslugi" class="relative group cursor-hover text-white/80 hover:text-white transition-colors py-2">
+                    Usługi
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-gold transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#portfolio" class="relative group cursor-hover text-white/80 hover:text-white transition-colors py-2">
+                    Portfolio
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-gold transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#opinie" class="relative group cursor-hover text-white/80 hover:text-white transition-colors py-2">
+                    Opinie
+                    <span class="absolute bottom-0 left-0 w-0 h-[1px] bg-gold transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#kontakt" class="btn-gold border border-gold/50 text-gold px-8 py-3 hover:text-black transition-all duration-400 cursor-hover">
+                    Kontakt
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white hover:text-gold transition-colors z-50 relative p-2">
+                <i class="ph ph-list text-3xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="fixed inset-0 bg-black/98 backdrop-blur-3xl flex-col justify-center items-center space-y-8 hidden z-40 transition-all duration-500 opacity-0 pt-10">
+            <a href="#o-nas" class="text-4xl font-serif text-white/80 hover:text-gold mobile-link transition-colors">O nas</a>
+            <a href="#uslugi" class="text-4xl font-serif text-white/80 hover:text-gold mobile-link transition-colors">Usługi</a>
+            <a href="#portfolio" class="text-4xl font-serif text-white/80 hover:text-gold mobile-link transition-colors">Portfolio</a>
+            <a href="#opinie" class="text-4xl font-serif text-white/80 hover:text-gold mobile-link transition-colors">Opinie</a>
+            <div class="h-px w-24 bg-gold/30 my-6"></div>
+            <a href="#kontakt" class="text-xl tracking-[0.2em] uppercase text-gold mobile-link font-medium">Kontakt</a>
+            
+            <!-- Mobile Socials -->
+            <div class="flex gap-8 mt-12">
+                <a href="#" class="text-white/40 hover:text-gold transition-colors p-2"><i class="ph-fill ph-instagram-logo text-3xl"></i></a>
+                <a href="#" class="text-white/40 hover:text-gold transition-colors p-2"><i class="ph-fill ph-facebook-logo text-3xl"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <header id="home" class="relative h-screen w-full overflow-hidden bg-black">
+        
+        <div id="hero-slider" class="absolute inset-0 z-0">
+            <!-- Slide 1 -->
+            <div class="slide active absolute inset-0 w-full h-full">
+                <div class="bg-image absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90"></div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="slide absolute inset-0 w-full h-full">
+                <div class="bg-image absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90"></div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="slide absolute inset-0 w-full h-full">
+                <div class="bg-image absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90"></div>
+            </div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="absolute inset-0 flex flex-col justify-center items-center text-center px-4 z-10 pt-20">
+            <div class="reveal-up in-view mb-6 flex items-center gap-4">
+                <div class="h-px w-12 bg-gold/50"></div>
+                <p class="text-gold tracking-[0.4em] text-xs md:text-sm uppercase font-light">Pracownia Architektury Wnętrz</p>
+                <div class="h-px w-12 bg-gold/50"></div>
+            </div>
+            
+            <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl mb-8 leading-tight max-w-5xl reveal-up in-view delay-100">
+                Kreujemy przestrzenie,<br>
+                <span class="text-gradient-gold italic pr-2">w których chce się żyć.</span>
+            </h1>
+            
+            <div class="reveal-up in-view delay-200 mt-4">
+                <a href="#portfolio" class="btn-gold border border-gold bg-gold text-black px-10 py-4 uppercase tracking-[0.2em] text-xs font-semibold cursor-hover hover:text-black shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                    Odkryj Realizacje
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Down Indicator -->
+        <a href="#o-nas" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50 hover:text-gold transition-colors cursor-hover reveal-up in-view delay-300">
+            <span class="text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+            <div class="w-px h-16 bg-white/20 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1/2 bg-gold animate-[float_2s_ease-in-out_infinite]"></div>
+            </div>
+        </a>
+
+        <!-- Slider Controls -->
+        <div class="absolute bottom-1/2 right-6 transform translate-y-1/2 flex flex-col space-y-4 z-10 hidden md:flex">
+            <button class="hero-dot w-2 h-2 rounded-full bg-gold transition-all duration-500 h-10 cursor-hover shadow-[0_0_10px_rgba(212,175,55,0.5)]"></button>
+            <button class="hero-dot w-2 h-2 rounded-full bg-white/30 hover:bg-white transition-all duration-500 cursor-hover"></button>
+            <button class="hero-dot w-2 h-2 rounded-full bg-white/30 hover:bg-white transition-all duration-500 cursor-hover"></button>
+        </div>
+    </header>
+
+    <section id="o-nas" class="py-32 px-6 md:px-12 bg-black-light relative z-20">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+            
+            <!-- Obraz (Parallax/Reveal) -->
+            <div class="relative group reveal-scale">
+                <!-- Złota ramka z efektem przesunięcia na hover -->
+                <div class="absolute -inset-4 border border-gold/20 translate-x-6 translate-y-6 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform duration-700 ease-out z-0"></div>
+                
+                <div class="relative z-10 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Główny Projektant" class="w-full h-[700px] object-cover filter grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 group-hover:scale-105 transition-all duration-1000">
+                </div>
+                
+                <!-- Pływający element informacyjny -->
+                <div class="absolute -bottom-8 -left-8 bg-black/90 backdrop-blur-md p-8 z-20 border border-white/10 shadow-2xl group-hover:-translate-y-4 transition-transform duration-700">
+                    <i class="ph-light ph-signature text-4xl text-gold mb-2"></i>
+                    <h3 class="font-serif text-3xl text-white">Anna Kowalska</h3>
+                    <p class="text-xs tracking-[0.2em] uppercase text-gold/80 mt-2">Główny Architekt</p>
+                </div>
+            </div>
+            
+            <!-- Tekst i statystyki -->
+            <div class="pl-0 md:pl-10">
+                <div class="flex items-center gap-4 mb-8 reveal-up">
+                    <div class="h-px w-16 bg-gold"></div>
+                    <p class="text-gold uppercase tracking-[0.2em] text-xs">Nasza Filozofia</p>
+                </div>
+                
+                <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl mb-10 leading-[1.1] reveal-up delay-100">
+                    Ponadczasowa elegancja spotyka <span class="text-gold italic">funkcjonalność.</span>
+                </h2>
+                
+                <div class="space-y-6 text-gray-400 leading-relaxed font-light text-lg reveal-up delay-200">
+                    <p>W Lumina Design wierzymy, że wnętrze to nie tylko układ ścian i zbiór mebli. To osobista przestrzeń, która powinna odzwierciedlać charakter jej mieszkańców, inspirować na co dzień i zapewniać komfort na najwyższym poziomie.</p>
+                    <p>Od ponad dekady projektujemy luksusowe apartamenty, rezydencje oraz wyrafinowane przestrzenie komercyjne. Naszym znakiem rozpoznawczym jest obsesyjna dbałość o detale, wykorzystanie szlachetnych, naturalnych materiałów oraz sztuka harmonijnego łączenia klasyki z najnowszymi trendami w designie.</p>
+                </div>
+                
+                <!-- Statystyki z animowanym licznikiem -->
+                <div class="mt-16 grid grid-cols-2 gap-10 border-t border-white/10 pt-10 reveal-up delay-300">
+                    <div>
+                        <p class="text-5xl font-serif text-gold mb-2 flex items-end">
+                            <span class="count-up" data-target="12">0</span><span class="text-3xl pb-1 text-gold/70">+</span>
+                        </p>
+                        <p class="text-xs uppercase tracking-[0.1em] text-gray-500 font-medium">Lat doświadczenia</p>
+                    </div>
+                    <div>
+                        <p class="text-5xl font-serif text-gold mb-2 flex items-end">
+                            <span class="count-up" data-target="150">0</span><span class="text-3xl pb-1 text-gold/70">+</span>
+                        </p>
+                        <p class="text-xs uppercase tracking-[0.1em] text-gray-500 font-medium">Zrealizowanych projektów</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="uslugi" class="py-32 px-6 md:px-12 bg-black relative">
+        <!-- Dekoracyjne tło -->
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent"></div>
+        <div class="absolute -top-40 right-0 w-96 h-96 bg-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="text-center mb-20 reveal-up">
+                <p class="text-gold uppercase tracking-[0.2em] text-xs mb-4">W czym się specjalizujemy</p>
+                <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl">Ekskluzywne Usługi</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="group relative bg-black-lighter p-12 border border-white/5 hover:border-gold/30 transition-all duration-500 hover:-translate-y-2 cursor-hover reveal-up overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    <i class="ph-light ph-blueprint text-6xl text-gold/80 mb-8 block group-hover:scale-110 group-hover:text-gold transition-all duration-500"></i>
+                    <h3 class="font-serif text-2xl mb-4 text-white group-hover:text-gold transition-colors duration-300">Projektowanie Kompleksowe</h3>
+                    <p class="text-gray-400 font-light leading-relaxed mb-8 text-sm">Pełen proces od unikalnej koncepcji wizualnej po fotorealistyczne wizualizacje 3D, szczegółowe rysunki wykonawcze dla ekip i gotową listę zakupową.</p>
+                    <div class="h-px w-0 bg-gold group-hover:w-full transition-all duration-700 ease-out mb-6"></div>
+                    <a href="#kontakt" class="inline-flex items-center text-xs uppercase tracking-widest text-white/50 group-hover:text-gold transition-colors">
+                        Zapytaj o wycenę <i class="ph ph-arrow-right ml-2 transition-transform group-hover:translate-x-2"></i>
+                    </a>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="group relative bg-black-lighter p-12 border border-white/5 hover:border-gold/30 transition-all duration-500 hover:-translate-y-2 cursor-hover reveal-up delay-100 overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    <i class="ph-light ph-paint-roller text-6xl text-gold/80 mb-8 block group-hover:scale-110 group-hover:text-gold transition-all duration-500"></i>
+                    <h3 class="font-serif text-2xl mb-4 text-white group-hover:text-gold transition-colors duration-300">Nadzór Autorski (Pod klucz)</h3>
+                    <p class="text-gray-400 font-light leading-relaxed mb-8 text-sm">Bierzemy pełną odpowiedzialność za realizację. Koordynujemy prace ekip wykończeniowych, zamówienia i logistykę, by efekt odpowiadał projektowi w 100%.</p>
+                    <div class="h-px w-0 bg-gold group-hover:w-full transition-all duration-700 ease-out mb-6"></div>
+                    <a href="#kontakt" class="inline-flex items-center text-xs uppercase tracking-widest text-white/50 group-hover:text-gold transition-colors">
+                        Dowiedz się więcej <i class="ph ph-arrow-right ml-2 transition-transform group-hover:translate-x-2"></i>
+                    </a>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="group relative bg-black-lighter p-12 border border-white/5 hover:border-gold/30 transition-all duration-500 hover:-translate-y-2 cursor-hover reveal-up delay-200 overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    <i class="ph-light ph-armchair text-6xl text-gold/80 mb-8 block group-hover:scale-110 group-hover:text-gold transition-all duration-500"></i>
+                    <h3 class="font-serif text-2xl mb-4 text-white group-hover:text-gold transition-colors duration-300">Konsultacje i Home Staging</h3>
+                    <p class="text-gray-400 font-light leading-relaxed mb-8 text-sm">Szybka, ale spektakularna metamorfoza wnętrza. Profesjonalnie doradzamy w doborze kolorów, mebli i dodatków, podnosząc wartość rynkową nieruchomości.</p>
+                    <div class="h-px w-0 bg-gold group-hover:w-full transition-all duration-700 ease-out mb-6"></div>
+                    <a href="#kontakt" class="inline-flex items-center text-xs uppercase tracking-widest text-white/50 group-hover:text-gold transition-colors">
+                        Umów spotkanie <i class="ph ph-arrow-right ml-2 transition-transform group-hover:translate-x-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="portfolio" class="py-32 bg-black-light overflow-hidden">
+        <div class="px-6 md:px-12 max-w-[1600px] mx-auto mb-16 flex flex-col md:flex-row justify-between items-end gap-6 reveal-up">
+            <div>
+                <p class="text-gold uppercase tracking-[0.2em] text-xs mb-4">Wybrane Realizacje</p>
+                <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl">Nasze Portfolio</h2>
+            </div>
+            <div class="flex gap-4 hidden md:flex">
+                <button id="scroll-left" class="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center text-white/50 hover:bg-gold hover:border-gold hover:text-black transition-all duration-300 cursor-hover group">
+                    <i class="ph ph-arrow-left text-2xl group-hover:-translate-x-1 transition-transform"></i>
+                </button>
+                <button id="scroll-right" class="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center text-white/50 hover:bg-gold hover:border-gold hover:text-black transition-all duration-300 cursor-hover group">
+                    <i class="ph ph-arrow-right text-2xl group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Horizontal Drag & Scroll Container -->
+        <!-- Używamy javascriptu do obsługi drag, a snap tylko na mobile -->
+        <div id="portfolio-container" class="flex overflow-x-auto gap-8 px-6 md:px-12 pb-12 select-none md:snap-none snap-x snap-mandatory no-scrollbar relative reveal-scale delay-100">
+            
+            <!-- Project 1 -->
+            <div class="snap-center shrink-0 w-[85vw] md:w-[600px] lg:w-[700px] group portfolio-item" data-project-id="zlota44">
+                <div class="relative overflow-hidden aspect-[4/5] bg-black-lighter border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Apartament Złota 44" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0 pointer-events-none">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+                    
+                    <div class="absolute bottom-0 left-0 w-full p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <div class="overflow-hidden mb-2">
+                            <p class="text-gold text-xs tracking-[0.2em] uppercase transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">Warszawa</p>
+                        </div>
+                        <h3 class="font-serif text-3xl md:text-4xl text-white mb-4">Apartament Złota 44</h3>
+                        <div class="h-px w-12 bg-gold/50 group-hover:w-full transition-all duration-700 ease-out"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="snap-center shrink-0 w-[85vw] md:w-[600px] lg:w-[700px] group portfolio-item" data-project-id="konstancin">
+                <div class="relative overflow-hidden aspect-[4/5] bg-black-lighter border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Rezydencja Konstancin" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0 pointer-events-none">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+                    
+                    <div class="absolute bottom-0 left-0 w-full p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <div class="overflow-hidden mb-2">
+                            <p class="text-gold text-xs tracking-[0.2em] uppercase transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">Konstancin-Jeziorna</p>
+                        </div>
+                        <h3 class="font-serif text-3xl md:text-4xl text-white mb-4">Rezydencja Modern Classic</h3>
+                        <div class="h-px w-12 bg-gold/50 group-hover:w-full transition-all duration-700 ease-out"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="snap-center shrink-0 w-[85vw] md:w-[600px] lg:w-[700px] group portfolio-item" data-project-id="sopot">
+                <div class="relative overflow-hidden aspect-[4/5] bg-black-lighter border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Penthouse Sopot" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0 pointer-events-none">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+                    
+                    <div class="absolute bottom-0 left-0 w-full p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <div class="overflow-hidden mb-2">
+                            <p class="text-gold text-xs tracking-[0.2em] uppercase transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">Sopot</p>
+                        </div>
+                        <h3 class="font-serif text-3xl md:text-4xl text-white mb-4">Penthouse z widokiem</h3>
+                        <div class="h-px w-12 bg-gold/50 group-hover:w-full transition-all duration-700 ease-out"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 4 -->
+            <div class="snap-center shrink-0 w-[85vw] md:w-[600px] lg:w-[700px] group portfolio-item" data-project-id="krakow">
+                <div class="relative overflow-hidden aspect-[4/5] bg-black-lighter border border-white/5">
+                    <img src="https://images.unsplash.com/photo-1593696140826-c58b021acf8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Loft Kraków" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter grayscale-[20%] group-hover:grayscale-0 pointer-events-none">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
+                    
+                    <div class="absolute bottom-0 left-0 w-full p-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <div class="overflow-hidden mb-2">
+                            <p class="text-gold text-xs tracking-[0.2em] uppercase transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">Kraków</p>
+                        </div>
+                        <h3 class="font-serif text-3xl md:text-4xl text-white mb-4">Industrialny Loft</h3>
+                        <div class="h-px w-12 bg-gold/50 group-hover:w-full transition-all duration-700 ease-out"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dummy element for proper spacing at the end of scroll -->
+            <div class="shrink-0 w-12 md:w-24"></div>
+        </div>
+        
+        <!-- Pasek postępu scrolla na mobile -->
+        <div class="w-full px-6 md:hidden mt-6">
+            <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                <div id="portfolio-scroll-progress" class="h-full bg-gold w-1/4 transition-all duration-300"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="opinie" class="py-32 bg-black relative border-t border-white/5 overflow-hidden">
+        <!-- Złoty akcent tła -->
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[150px] pointer-events-none"></div>
+        
+        <div class="max-w-5xl mx-auto px-6 relative z-10 text-center reveal-up">
+            <i class="ph-fill ph-quotes text-7xl text-gold/20 mb-12 mx-auto block animate-pulse"></i>
+            
+            <div id="testimonial-slider" class="relative min-h-[300px] md:min-h-[250px] flex items-center justify-center">
+                
+                <!-- Opinia 1 -->
+                <div class="testimonial-slide absolute inset-0 transition-all duration-1000 opacity-100 translate-y-0 z-10">
+                    <p class="font-serif text-2xl md:text-4xl italic leading-relaxed mb-10 text-white/90">
+                        "Współpraca z Lumina Design to czysta poezja. Zrozumieli nasze potrzeby lepiej niż my sami, a finalny efekt w apartamencie przeszedł nasze najśmielsze oczekiwania. Luksus, który jest jednocześnie bardzo domowy."
+                    </p>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-px bg-gold mb-4"></div>
+                        <h4 class="text-white tracking-[0.2em] uppercase text-xs font-semibold mb-1">Karolina i Piotr S.</h4>
+                        <p class="text-gold/70 text-xs tracking-wider">Warszawa</p>
+                    </div>
+                </div>
+                
+                <!-- Opinia 2 -->
+                <div class="testimonial-slide absolute inset-0 transition-all duration-1000 opacity-0 translate-y-8 z-0 pointer-events-none">
+                    <p class="font-serif text-2xl md:text-4xl italic leading-relaxed mb-10 text-white/90">
+                        "Pełen profesjonalizm na każdym etapie. Od pierwszych genialnych szkiców, przez żmudny wybór materiałów z najwyższej półki, aż po bezbłędny nadzór nad ekipą. Zaoszczędzili mi mnóstwo czasu i nerwów."
+                    </p>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-px bg-gold mb-4"></div>
+                        <h4 class="text-white tracking-[0.2em] uppercase text-xs font-semibold mb-1">Dr Marek Zawadzki</h4>
+                        <p class="text-gold/70 text-xs tracking-wider">Kraków</p>
+                    </div>
+                </div>
+
+                <!-- Opinia 3 -->
+                <div class="testimonial-slide absolute inset-0 transition-all duration-1000 opacity-0 translate-y-8 z-0 pointer-events-none">
+                    <p class="font-serif text-2xl md:text-4xl italic leading-relaxed mb-10 text-white/90">
+                        "Otrzymaliśmy projekt wyrafinowany, niezwykle elegancki, ale pozbawiony zbędnego zadęcia. Detale w naszym domu zachwycają każdego gościa. Gorąco polecam tę pracownię tym, którzy nie znoszą kompromisów jakościowych."
+                    </p>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-px bg-gold mb-4"></div>
+                        <h4 class="text-white tracking-[0.2em] uppercase text-xs font-semibold mb-1">Magdalena Kowalczyk</h4>
+                        <p class="text-gold/70 text-xs tracking-wider">Sopot</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrolki z paskiem postępu -->
+            <div class="flex items-center justify-center gap-6 mt-16 relative">
+                <button class="test-dot relative w-12 h-px bg-white/20 hover:bg-white transition-colors duration-300 cursor-hover">
+                    <span class="absolute top-0 left-0 h-full bg-gold w-full origin-left scale-x-100 transition-transform duration-500"></span>
+                </button>
+                <button class="test-dot relative w-12 h-px bg-white/20 hover:bg-white transition-colors duration-300 cursor-hover">
+                    <span class="absolute top-0 left-0 h-full bg-gold w-full origin-left scale-x-0 transition-transform duration-500"></span>
+                </button>
+                <button class="test-dot relative w-12 h-px bg-white/20 hover:bg-white transition-colors duration-300 cursor-hover">
+                    <span class="absolute top-0 left-0 h-full bg-gold w-full origin-left scale-x-0 transition-transform duration-500"></span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="kontakt" class="py-32 px-6 md:px-12 bg-black-light border-t border-white/5 relative">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-24">
+            
+            <!-- Informacje kontaktowe (2 kolumny) -->
+            <div class="lg:col-span-2 reveal-up">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="h-px w-12 bg-gold"></div>
+                    <p class="text-gold uppercase tracking-[0.2em] text-xs">Rozpocznijmy współpracę</p>
+                </div>
+                
+                <h2 class="font-serif text-4xl md:text-5xl mb-8">Skontaktuj się <br><span class="italic text-gold/90">z nami.</span></h2>
+                <p class="text-gray-400 font-light leading-relaxed mb-12 text-sm">
+                    Każdy wybitny projekt zaczyna się od inspirującej rozmowy. Opowiedz nam o swoim wymarzonym wnętrzu, a z przyjemnością przedstawimy Ci naszą wizję.
+                </p>
+
+                <div class="space-y-10">
+                    <div class="flex items-start gap-6 group cursor-hover">
+                        <div class="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-gold group-hover:border-gold transition-colors duration-500 shrink-0">
+                            <i class="ph-light ph-map-pin text-2xl group-hover:animate-bounce"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-serif text-xl mb-2 text-white">Adres Pracowni</h4>
+                            <p class="text-gray-400 font-light text-sm leading-relaxed">ul. Złota 44/220<br>00-120 Warszawa</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-6 group cursor-hover">
+                        <div class="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-gold group-hover:border-gold transition-colors duration-500 shrink-0">
+                            <i class="ph-light ph-phone text-2xl group-hover:rotate-12 transition-transform"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-serif text-xl mb-2 text-white">Telefon</h4>
+                            <a href="tel:+48500123456" class="text-gray-400 font-light text-sm hover:text-gold transition-colors block">+48 500 123 456</a>
+                            <p class="text-xs text-gray-600 mt-1">Pn-Pt: 9:00 - 17:00</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-6 group cursor-hover">
+                        <div class="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center text-gold group-hover:border-gold transition-colors duration-500 shrink-0">
+                            <i class="ph-light ph-envelope text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-serif text-xl mb-2 text-white">E-mail</h4>
+                            <a href="mailto:kontakt@luminadesign.pl" class="text-gray-400 font-light text-sm hover:text-gold transition-colors">kontakt@luminadesign.pl</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formularz (3 kolumny) -->
+            <div class="lg:col-span-3 bg-black p-8 md:p-14 border border-white/5 relative group reveal-scale delay-200">
+                <!-- Dekoracyjne narożniki -->
+                <div class="absolute top-0 left-0 w-4 h-4 border-t border-l border-gold/50 group-hover:border-gold transition-colors duration-500"></div>
+                <div class="absolute top-0 right-0 w-4 h-4 border-t border-r border-gold/50 group-hover:border-gold transition-colors duration-500"></div>
+                <div class="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-gold/50 group-hover:border-gold transition-colors duration-500"></div>
+                <div class="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-gold/50 group-hover:border-gold transition-colors duration-500"></div>
+
+                <form id="contact-form" class="space-y-4 relative z-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                        <div class="input-group">
+                            <input type="text" id="name" required autocomplete="off">
+                            <label for="name">Imię i Nazwisko</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="tel" id="phone" required autocomplete="off">
+                            <label for="phone">Telefon</label>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="email" id="email" required autocomplete="off">
+                        <label for="email">Adres E-mail</label>
+                    </div>
+                    
+                    <div class="input-group relative">
+                        <select id="service" required class="w-full bg-transparent border-b border-white/20 py-3 text-white transition-colors appearance-none cursor-hover focus:border-gold focus:outline-none pb-2 text-sm font-light">
+                            <option value="" disabled selected hidden></option>
+                            <option value="kompleksowe" class="bg-black text-white">Projekt Kompleksowy</option>
+                            <option value="nadzor" class="bg-black text-white">Projekt z Nadzorem (Pod klucz)</option>
+                            <option value="konsultacje" class="bg-black text-white">Konsultacje / Metamorfoza</option>
+                            <option value="komercyjne" class="bg-black text-white">Wnętrza Komercyjne</option>
+                        </select>
+                        <label for="service" class="absolute top-[-15px] left-0 text-[0.65rem] text-gold uppercase tracking-widest pointer-events-none">Rodzaj Usługi</label>
+                        <i class="ph ph-caret-down absolute right-0 top-3 text-white/50 pointer-events-none"></i>
+                    </div>
+
+                    <div class="input-group pt-4">
+                        <textarea id="message" rows="3" required autocomplete="off" class="resize-none"></textarea>
+                        <label for="message">Twoja Wiadomość (np. metraż, lokalizacja)</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-white text-black font-semibold uppercase tracking-[0.2em] text-xs py-5 mt-4 hover:bg-gold transition-colors duration-300 cursor-hover">
+                        Wyślij Wiadomość
+                    </button>
+                    
+                    <div id="form-status" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center text-center border border-gold/30">
+                        <i class="ph-light ph-check-circle text-5xl text-gold mb-4"></i>
+                        <p class="font-serif text-2xl text-white mb-2">Dziękujemy.</p>
+                        <p class="text-sm text-gray-400 font-light">Wiadomość została wysłana. Skontaktujemy się z Tobą wkrótce.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black pt-20 pb-10 border-t border-white/5 px-6 md:px-12">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10 mb-16">
+             <a href="#" class="font-handwriting text-5xl text-white group cursor-hover tracking-wide">
+                Gold Project<span class="text-gold ml-1">.</span>
+            </a>
+            
+            <div class="flex gap-4">
+                <a href="#" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-black hover:border-gold transition-all duration-300 cursor-hover group">
+                    <i class="ph-fill ph-instagram-logo text-xl group-hover:scale-110 transition-transform"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-black hover:border-gold transition-all duration-300 cursor-hover group">
+                    <i class="ph-fill ph-facebook-logo text-xl group-hover:scale-110 transition-transform"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-gold hover:text-black hover:border-gold transition-all duration-300 cursor-hover group">
+                    <i class="ph-fill ph-pinterest-logo text-xl group-hover:scale-110 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-[10px] text-gray-600 uppercase tracking-[0.2em] border-t border-white/5 pt-8">
+            <p>&copy; 2024 Lumina Design. Wszelkie prawa zastrzeżone.</p>
+            <div class="flex gap-8 mt-6 md:mt-0">
+                <a href="#" class="hover:text-gold transition-colors cursor-hover">Polityka Prywatności</a>
+                <a href="#" class="hover:text-gold transition-colors cursor-hover">Regulamin</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="project-modal" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl hidden opacity-0 transition-opacity duration-500 overflow-y-auto no-scrollbar">
+        <!-- Close button (Fixed) -->
+        <button id="close-modal-btn" class="fixed top-6 right-6 md:top-10 md:right-10 w-14 h-14 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-gold hover:text-black hover:border-gold transition-all duration-300 z-[110] cursor-hover group">
+            <i class="ph-light ph-x text-2xl group-hover:rotate-90 transition-transform duration-300"></i>
+        </button>
+        
+        <!-- Przycisk powrotu na górę modala (Fixed) -->
+        <button id="modal-to-top" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-12 h-12 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-gold hover:text-black hover:border-gold transition-all duration-300 z-[110] cursor-hover opacity-0 translate-y-10">
+            <i class="ph-light ph-arrow-up text-xl"></i>
+        </button>
+
+        <div class="w-full relative min-h-screen flex flex-col">
+            <!-- Modal Header / Hero Image -->
+            <div class="relative w-full h-[60vh] md:h-[70vh]">
+                <img id="modal-hero-img" src="" alt="Hero" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full px-6 md:px-20 pb-16 flex flex-col md:flex-row justify-between items-end gap-8">
+                    <div class="max-w-3xl transform translate-y-10 opacity-0 modal-anim-item">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="h-px w-10 bg-gold"></div>
+                            <p id="modal-project-location" class="text-gold uppercase tracking-[0.2em] text-xs">Lokalizacja</p>
+                        </div>
+                        <h2 id="modal-project-title" class="font-serif text-5xl md:text-7xl text-white leading-tight">Tytuł Projektu</h2>
+                    </div>
+                    
+                    <div class="text-right pb-2 transform translate-y-10 opacity-0 modal-anim-item delay-100 hidden md:block">
+                        <p class="text-gray-400 text-xs uppercase tracking-widest mb-1">Status</p>
+                        <p class="text-white text-sm">Zrealizowano</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Content (Editorial layout) -->
+            <div class="px-6 md:px-20 py-20 max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16">
+                <!-- Kolumna tekstu (Sticky) -->
+                <div class="lg:col-span-4">
+                    <div class="sticky top-20 transform translate-y-10 opacity-0 modal-anim-item delay-200">
+                        <h3 class="font-serif text-3xl mb-6 text-gold">O Projekcie</h3>
+                        <p id="modal-project-desc" class="text-gray-400 font-light leading-relaxed text-sm md:text-base">Opis projektu...</p>
+                        
+                        <div class="mt-12 space-y-6 border-t border-white/10 pt-8">
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.2em] text-gray-500 mb-1">Zakres prac</p>
+                                <p class="text-sm text-white">Projekt Kompleksowy + Nadzór</p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.2em] text-gray-500 mb-1">Główny Architekt</p>
+                                <p class="text-sm text-white">Anna Kowalska</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Galeria zdjęć (Masonry/Grid) -->
+                <div id="modal-gallery" class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Images will be injected here via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. Preloader ---
+            const preloader = document.getElementById('preloader');
+            const loaderLine = document.getElementById('loader-line');
+            
+            // Rozpocznij animację paska po krótkim czasie
+            setTimeout(() => { loaderLine.style.width = '100%'; }, 100);
+            
+            // Ukryj preloader po załadowaniu
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    preloader.classList.add('hidden-up');
+                    setTimeout(() => { preloader.style.display = 'none'; }, 1000);
+                }, 1200); // Minimum time to show the logo
+            });
+            // Fallback for document.ready if load event fired too quickly
+            setTimeout(() => {
+                if(preloader.style.display !== 'none' && !preloader.classList.contains('hidden-up')){
+                    preloader.classList.add('hidden-up');
+                    setTimeout(() => { preloader.style.display = 'none'; }, 1000);
+                }
+            }, 3000);
+
+
+            // --- 2. Custom Cursor ---
+            const cursorDot = document.getElementById('cursor-dot');
+            const cursorRing = document.getElementById('cursor-ring');
+            const hoverElements = document.querySelectorAll('a, button, .cursor-hover');
+            
+            // Aktualizacja pozycji (używamy requestAnimationFrame dla płynności ringu)
+            let mouseX = 0, mouseY = 0;
+            let ringX = 0, ringY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                cursorDot.style.left = `${mouseX}px`;
+                cursorDot.style.top = `${mouseY}px`;
+            });
+
+            function animateRing() {
+                // Lerp (Linear Interpolation) dla płynnego opóźnienia ringu
+                ringX += (mouseX - ringX) * 0.15;
+                ringY += (mouseY - ringY) * 0.15;
+                cursorRing.style.left = `${ringX}px`;
+                cursorRing.style.top = `${ringY}px`;
+                requestAnimationFrame(animateRing);
+            }
+            if(window.matchMedia("(pointer: fine)").matches) { animateRing(); }
+
+            // Efekty Hover na linkach
+            hoverElements.forEach(el => {
+                el.addEventListener('mouseenter', () => document.body.classList.add('hovering-link'));
+                el.addEventListener('mouseleave', () => document.body.classList.remove('hovering-link'));
+            });
+
+
+            // --- 3. Smart Navbar & Mobile Menu ---
+            const navbar = document.getElementById('navbar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+            
+            let lastScrollTop = 0;
+            let isMenuOpen = false;
+
+            window.addEventListener('scroll', () => {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Zmiana tła
+                if (scrollTop > 50) {
+                    navbar.classList.add('bg-black/90', 'border-white/10', 'py-4');
+                    navbar.classList.remove('bg-black/40', 'py-6', 'border-transparent');
+                } else {
+                    navbar.classList.add('bg-black/40', 'py-6', 'border-transparent');
+                    navbar.classList.remove('bg-black/90', 'border-white/10', 'py-4');
+                }
+
+                // Hide/Show na scroll (Smart Nav) - omijamy ukrywanie gdy menu mobilne jest otwarte
+                if (scrollTop > lastScrollTop && scrollTop > 200 && !isMenuOpen) {
+                    // Scroll Down
+                    navbar.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scroll Up
+                    navbar.style.transform = 'translateY(0)';
+                }
+                lastScrollTop = scrollTop;
+            });
+
+            function toggleMenu() {
+                isMenuOpen = !isMenuOpen;
+                const icon = mobileMenuBtn.querySelector('i');
+                
+                if(isMenuOpen) {
+                    mobileMenu.classList.remove('hidden');
+                    // setTimeout to allow display block to apply before opacity transition
+                    setTimeout(() => { 
+                        mobileMenu.classList.remove('opacity-0'); 
+                        mobileMenu.classList.add('opacity-100');
+                    }, 10);
+                    document.body.style.overflow = 'hidden';
+                    icon.classList.remove('ph-list');
+                    icon.classList.add('ph-x');
+                    navbar.classList.add('bg-black'); // Pełne tło navbaru podczas otwartego menu
+                } else {
+                    mobileMenu.classList.remove('opacity-100');
+                    mobileMenu.classList.add('opacity-0');
+                    setTimeout(() => { mobileMenu.classList.add('hidden'); }, 300);
+                    document.body.style.overflow = '';
+                    icon.classList.remove('ph-x');
+                    icon.classList.add('ph-list');
+                    
+                    // Powrót do transparentnego paska jeśli jesteśmy na samej górze
+                    if (window.pageYOffset <= 50) {
+                         navbar.classList.remove('bg-black');
+                    }
+                }
+            }
+
+            mobileMenuBtn.addEventListener('click', toggleMenu);
+            mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
+
+
+            // --- 4. Animacje On-Scroll (Intersection Observer) ---
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+            const revealElements = document.querySelectorAll('.reveal-up, .reveal-scale');
+            
+            const scrollObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        // Uruchomienie licznika jeśli to kontener statystyk
+                        const counters = entry.target.querySelectorAll('.count-up');
+                        if(counters.length > 0) {
+                            counters.forEach(counter => startCounter(counter));
+                        }
+                        observer.unobserve(entry.target); // Animuj tylko raz
+                    }
+                });
+            }, observerOptions);
+
+            revealElements.forEach(el => scrollObserver.observe(el));
+
+            // Funkcja licznika
+            function startCounter(el) {
+                const target = parseInt(el.getAttribute('data-target'));
+                const duration = 2000; // 2 sekundy
+                const step = target / (duration / 16); // 60fps
+                let current = 0;
+
+                const updateCounter = () => {
+                    current += step;
+                    if(current < target) {
+                        el.innerText = Math.ceil(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        el.innerText = target;
+                    }
+                };
+                updateCounter();
+            }
+
+
+            // --- 5. Hero Slider (Autoplay + Controls) ---
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.hero-dot');
+            let currentSlide = 0;
+            let slideInterval;
+
+            function showSlide(index) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => {
+                    dot.classList.remove('h-10', 'bg-gold', 'shadow-[0_0_10px_rgba(212,175,55,0.5)]');
+                    dot.classList.add('bg-white/30');
+                });
+
+                slides[index].classList.add('active');
+                dots[index].classList.remove('bg-white/30');
+                dots[index].classList.add('h-10', 'bg-gold', 'shadow-[0_0_10px_rgba(212,175,55,0.5)]');
+                currentSlide = index;
+            }
+
+            function nextSlide() { showSlide((currentSlide + 1) % slides.length); }
+            slideInterval = setInterval(nextSlide, 7000); // Dłuższy czas dla efektu Ken Burns
+
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    clearInterval(slideInterval);
+                    showSlide(index);
+                    slideInterval = setInterval(nextSlide, 7000);
+                });
+            });
+
+
+            // --- 6. Portfolio: Drag to Scroll + Arrows ---
+            const portfolioContainer = document.getElementById('portfolio-container');
+            const scrollLeftBtn = document.getElementById('scroll-left');
+            const scrollRightBtn = document.getElementById('scroll-right');
+            const progressBar = document.getElementById('portfolio-scroll-progress');
+            
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            // Przyciski
+            const scrollAmount = window.innerWidth > 768 ? 700 : window.innerWidth * 0.85;
+            scrollLeftBtn?.addEventListener('click', () => portfolioContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' }));
+            scrollRightBtn?.addEventListener('click', () => portfolioContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' }));
+
+            // Aktualizacja paska postępu na mobile
+            portfolioContainer.addEventListener('scroll', () => {
+                const maxScroll = portfolioContainer.scrollWidth - portfolioContainer.clientWidth;
+                const scrollPercentage = (portfolioContainer.scrollLeft / maxScroll) * 100;
+                if(progressBar) progressBar.style.width = `${Math.max(10, scrollPercentage)}%`;
+            });
+
+            // Myszka - Drag
+            portfolioContainer.addEventListener('mousedown', (e) => {
+                isDown = true;
+                portfolioContainer.style.cursor = 'grabbing';
+                document.body.classList.add('drag-mode');
+                startX = e.pageX - portfolioContainer.offsetLeft;
+                scrollLeft = portfolioContainer.scrollLeft;
+            });
+            
+            portfolioContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                portfolioContainer.style.cursor = 'grab';
+                document.body.classList.remove('drag-mode');
+            });
+            
+            portfolioContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                portfolioContainer.style.cursor = 'grab';
+                document.body.classList.remove('drag-mode');
+            });
+            
+            portfolioContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - portfolioContainer.offsetLeft;
+                const walk = (x - startX) * 2; // Szybkość przewijania
+                portfolioContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            // Aby zapobiec otwieraniu modala podczas przeciągania
+            let isDraggingClick = false;
+            portfolioContainer.addEventListener('mousemove', () => { if(isDown) isDraggingClick = true; });
+            portfolioContainer.addEventListener('mousedown', () => { isDraggingClick = false; });
+
+
+            // --- 7. Testimonials Slider ---
+            const testSlides = document.querySelectorAll('.testimonial-slide');
+            const testDots = document.querySelectorAll('.test-dot');
+            const testBars = document.querySelectorAll('.test-dot span');
+            let currentTest = 0;
+            let testTimer;
+            const testDuration = 6000;
+
+            function showTestimonial(index) {
+                // Reset wszystkich slide'ów i pasków
+                testSlides.forEach(slide => {
+                    slide.classList.remove('opacity-100', 'translate-y-0');
+                    slide.classList.add('opacity-0', 'translate-y-8', 'pointer-events-none');
+                    slide.style.zIndex = '0';
+                });
+                testBars.forEach(bar => {
+                    bar.style.transform = 'scaleX(0)';
+                    bar.style.transitionDuration = '0s'; // Natychmiastowy reset
+                });
+
+                // Pokaż obecny
+                testSlides[index].classList.remove('opacity-0', 'translate-y-8', 'pointer-events-none');
+                testSlides[index].classList.add('opacity-100', 'translate-y-0');
+                testSlides[index].style.zIndex = '10';
+                
+                // Animuj pasek postępu (setTimeout aby wymusić re-render przed animacją)
+                setTimeout(() => {
+                    testBars[index].style.transitionDuration = `${testDuration}ms`;
+                    testBars[index].style.transform = 'scaleX(1)';
+                }, 50);
+
+                currentTest = index;
+            }
+
+            function nextTestimonial() { showTestimonial((currentTest + 1) % testSlides.length); }
+            
+            testTimer = setInterval(nextTestimonial, testDuration);
+            // Inicjalizacja pierwszego paska
+            setTimeout(() => {
+                testBars[0].style.transitionDuration = `${testDuration}ms`;
+                testBars[0].style.transform = 'scaleX(1)';
+            }, 50);
+
+            testDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    clearInterval(testTimer);
+                    showTestimonial(index);
+                    testTimer = setInterval(nextTestimonial, testDuration);
+                });
+            });
+
+
+            // --- 8. Contact Form Handling (Feedback) ---
+            const form = document.getElementById('contact-form');
+            const formStatus = document.getElementById('form-status');
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                
+                btn.innerHTML = 'Przetwarzanie...';
+                btn.classList.add('opacity-50', 'pointer-events-none');
+                
+                // Symulacja wysyłania (AJAX)
+                setTimeout(() => {
+                    formStatus.classList.remove('hidden');
+                    // Reset formularza ukryty pod modalem sukcesu
+                    form.reset(); 
+                    
+                    setTimeout(() => {
+                        formStatus.classList.add('hidden');
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('opacity-50', 'pointer-events-none');
+                    }, 4000);
+                }, 1500);
+            });
+
+
+            // --- 9. Portfolio Modal (Magazine Editorial Layout) ---
+            const projectData = {
+                'zlota44': {
+                    title: 'Apartament Złota 44', location: 'Warszawa',
+                    desc: 'Koncepcja luksusowego apartamentu w sercu stolicy opierała się na stworzeniu przestrzeni jednocześnie reprezentacyjnej i intymnej. Zastosowaliśmy tu paletę głębokich brązów, szczerego złota oraz hebanowej czerni. Przestrzeń ubrano w naturalny kamień, rzadkie odmiany marmuru i rzemieślniczo szczotkowane drewno orzechowe. Oświetlenie pełni tu rolę biżuterii, dyskretnie podkreślając teksturowane ściany.',
+                    hero: 'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+                    images: [
+                        'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1600607687644-aac4c1566905?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80' // Wide image
+                    ]
+                },
+                'konstancin': {
+                    title: 'Rezydencja Modern Classic', location: 'Konstancin-Jeziorna',
+                    desc: 'Klasyczna elegancja zdefiniowana na nowo. Projekt obejmował kompleksową aranżację trzykondygnacyjnej rezydencji otoczonej lasem. Skupiliśmy się na jasnych, rozświetlonych przestrzeniach. Bazą są bogate sztukaterie, dębowy parkiet w ułożeniu "jodełka francuska" i potężne, kryształowe żyrandole przełamane minimalistycznymi meblami wypoczynkowymi o organicznych formach.',
+                    hero: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+                    images: [
+                        'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80'
+                    ]
+                },
+                'sopot': {
+                    title: 'Penthouse z widokiem', location: 'Sopot',
+                    desc: 'Nadmorski azyl zaprojektowany z myślą o ucieczce od miejskiego zgiełku. Panoramiczne przeszklenia całkowicie dyktowały układ funkcjonalny. Wnętrze jest celowo ascetyczne, aby nie konkurować z dramatycznym krajobrazem Bałtyku za oknem. Paleta barw to odcienie nadmorskiego piasku, spienionej bieli i szlachetnego bazaltu. Wiele elementów wyposażenia, jak kamienna wyspa kuchenna, wydaje się lewitować nad dębową podłogą.',
+                    hero: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+                    images: [
+                        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1600121848594-d8644e5707c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+                    ]
+                },
+                'krakow': {
+                    title: 'Industrialny Loft', location: 'Kraków',
+                    desc: 'Adaptacja przestrzeni dawnej fabryki cygar w luksusowy loft do życia. Zachowaliśmy i odrestaurowaliśmy oryginalną czerwoną cegłę oraz potężne żeliwne i betonowe stropy. Surowy chłód przełamano tu ekskluzywnymi materiałami: grubym, mięsistym welurem w kolorze butelkowej zieleni, szczotkowanym mosiądzem oraz dymionym szkłem. To przestrzeń pełna kontrastów, nieoczywista i niezwykle zmysłowa.',
+                    hero: 'https://images.unsplash.com/photo-1593696140826-c58b021acf8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+                    images: [
+                        'https://images.unsplash.com/photo-1600210492493-0946911123ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1600607686027-6c882e99083cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                        'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80'
+                    ]
+                }
+            };
+
+            const projectModal = document.getElementById('project-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const portfolioItems = document.querySelectorAll('.portfolio-item');
+            const modalToTopBtn = document.getElementById('modal-to-top');
+
+            function openModal(projectId) {
+                if(isDraggingClick) return; // Zapobiega kliknięciu po przeciągnięciu
+
+                const data = projectData[projectId];
+                if (!data) return;
+
+                // Wypełnij dane
+                document.getElementById('modal-project-title').textContent = data.title;
+                document.getElementById('modal-project-location').textContent = data.location;
+                document.getElementById('modal-project-desc').textContent = data.desc;
+                document.getElementById('modal-hero-img').src = data.hero;
+
+                // Budowa galerii (Editorial style)
+                const gallery = document.getElementById('modal-gallery');
+                gallery.innerHTML = '';
+                data.images.forEach((imgSrc, index) => {
+                    // Ostatnie zdjęcie (lub szerokie) zajmuje pełną szerokość
+                    const isFullWidth = index === 2 || (data.images.length % 2 !== 0 && index === data.images.length - 1);
+                    const colSpan = isFullWidth ? 'md:col-span-2' : '';
+                    const height = isFullWidth ? 'h-[40vh] md:h-[60vh]' : 'h-[50vh] md:h-[70vh]';
+                    
+                    const imgHTML = `
+                        <div class="${colSpan} overflow-hidden group cursor-hover modal-anim-item opacity-0 translate-y-10 delay-${(index%3)*100}">
+                            <img src="${imgSrc}" alt="Detal projektu" class="w-full ${height} object-cover filter grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" loading="lazy">
+                        </div>
+                    `;
+                    gallery.innerHTML += imgHTML;
+                });
+
+                // Pokaż modal
+                document.body.style.overflow = 'hidden';
+                projectModal.classList.remove('hidden');
+                
+                // Uruchom animacje elementów w modalu sekwencyjnie
+                requestAnimationFrame(() => {
+                    projectModal.classList.remove('opacity-0');
+                    setTimeout(() => {
+                        document.querySelectorAll('.modal-anim-item').forEach(el => {
+                            el.style.transition = 'opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                            el.classList.remove('opacity-0', 'translate-y-10');
+                        });
+                    }, 300);
+                });
+            }
+
+            function closeModal() {
+                projectModal.classList.add('opacity-0');
+                
+                // Reset animacji wewnętrznych po zamknięciu
+                setTimeout(() => {
+                    document.querySelectorAll('.modal-anim-item').forEach(el => {
+                        el.style.transition = 'none';
+                        el.classList.add('opacity-0', 'translate-y-10');
+                    });
+                    projectModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    projectModal.scrollTo(0,0);
+                }, 500);
+            }
+
+            portfolioItems.forEach(item => {
+                item.addEventListener('click', () => openModal(item.getAttribute('data-project-id')));
+            });
+
+            closeModalBtn.addEventListener('click', closeModal);
+            
+            // Back to top wewnątrz modala
+            projectModal.addEventListener('scroll', () => {
+                if(projectModal.scrollTop > 500) {
+                    modalToTopBtn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                } else {
+                    modalToTopBtn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                }
+            });
+
+            modalToTopBtn.addEventListener('click', () => {
+                projectModal.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Zamykanie przez ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !projectModal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
